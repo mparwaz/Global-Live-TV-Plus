@@ -297,6 +297,35 @@
             font-size: 0.9rem;
         }
 
+        /* --- NEW FOOTER STYLES --- */
+        .app-footer {
+            height: 40px; /* Fixed height for the footer */
+            background-color: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 0 20px;
+            white-space: nowrap;
+        }
+
+        .app-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+            transition: color 0.2s;
+        }
+
+        .app-footer a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+        /* --- END FOOTER STYLES --- */
+
         @media (max-width: 800px) {
             header { height: auto; padding: 10px; flex-wrap: wrap; }
             .logo { display: none; }
@@ -353,7 +382,10 @@
         </div>
     </aside>
 </div>
-
+<footer class="app-footer">
+    Powerd By: 
+    <a href="https://github.com/iptv-org/iptv" target="_blank">iptv-org</a>
+</footer>
 <script>
     // --- Config & Data ---
     const BASE_URL = 'https://iptv-org.github.io/iptv';
