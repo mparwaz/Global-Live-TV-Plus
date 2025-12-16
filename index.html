@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <style>
+        /* ... CSS STYLES (UNCHANGED) ... */
         :root {
             --bg-dark: #0d1117;
             --bg-panel: #161b22; 
@@ -34,8 +35,7 @@
         }
 
         header {
-            /* HEIGHT INCREASED TO 80PX FOR BANNER */
-            height: 80px;
+            height: 70px;
             background-color: var(--bg-panel);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -44,20 +44,14 @@
             gap: 20px;
             flex-shrink: 0;
         }
-        
-        /* UPDATED LOGO STYLES FOR IMAGE */
-        .logo { 
-            display: flex; 
-            align-items: center;
-            height: 100%;
-        }
 
-        .logo img {
-            height: 50px; /* Size of the banner */
-            width: auto;
-            object-fit: contain;
+        .logo { 
+            font-weight: 700; 
+            font-size: 1.4rem; 
+            color: var(--primary); 
+            letter-spacing: 1px; 
+            white-space: nowrap;
         }
-        /* END LOGO UPDATES */
 
         .controls {
             display: flex;
@@ -305,7 +299,7 @@
 
         @media (max-width: 800px) {
             header { height: auto; padding: 10px; flex-wrap: wrap; }
-            .logo { display: none; } /* Hide logo on small screens for space */
+            .logo { display: none; }
             .controls { gap: 10px; width: 100%; }
             
             .main-container { flex-direction: column; }
@@ -321,9 +315,7 @@
 <body>
 
 <header>
-    <div class="logo">
-        <img src="logo.png" alt="Global Live TV Plus Logo">
-    </div>
+    <div class="logo">Global Live TV Plus</div>
     <div class="controls">
         <input type="text" id="search" placeholder="Search channels in this category...">
     </div>
@@ -363,7 +355,7 @@
 </div>
 
 <script>
-    // --- Config & Data (Unchanged) ---
+    // --- Config & Data ---
     const BASE_URL = 'https://iptv-org.github.io/iptv';
     const ITEM_HEIGHT = 64; 
     const OVERVIEW_COUNT = 5; 
@@ -371,12 +363,14 @@
     const CACHE_KEY_PREFIX = 'iptv_cache_';
     const FAVORITES_KEY = 'global_live_tv_plus_favorites';
 
+    // UPDATED CATEGORIES LIST: Removed 'all-languages'
     const CATEGORIES = [
         // --- Core ---
         { id: 'favorites', name: 'Favorites', url: 'local' },
         { id: 'all', name: 'All Channels', url: `${BASE_URL}/index.m3u` }, 
         
         // --- Index Views (for search/filtering all channels by type) ---
+        // Note: The 'countries' filter relies on the 'all' index file, which is robust.
         { id: 'countries', name: 'Countries 🌎', url: `${BASE_URL}/index.m3u`, info: 'Please use the search bar to filter by country name (e.g., "Germany", "Japan", "USA").' }, 
 
         // --- Major Content Categories ---
@@ -410,6 +404,7 @@
         { id: 'legislative', name: 'Legislative', url: `${BASE_URL}/categories/legislative.m3u` },
         
         // --- Top Language Categories (50+ Channels) ---
+        // These are fast and reliable because they are small M3U files.
         { id: 'eng', name: 'English', url: `${BASE_URL}/languages/eng.m3u` }, 
         { id: 'spa', name: 'Spanish', url: `${BASE_URL}/languages/spa.m3u` }, 
         { id: 'fra', name: 'French', url: `${BASE_URL}/languages/fra.m3u` },   
@@ -437,7 +432,7 @@
     const errorTitle = document.getElementById('error-title');
     const errorMessage = document.getElementById('error-message');
 
-    // --- State (Unchanged) ---
+    // --- State ---
     let allChannels = [];       
     let filteredChannels = [];  
     let currentCategory = CATEGORIES[0]; 
@@ -515,6 +510,7 @@
                 const logoMatch = line.match(/tvg-logo="([^"]*)"/);
                 current.logo = logoMatch ? logoMatch[1] : null;
                 
+                // EXTRACTING METADATA FOR FILTERING/DISPLAY
                 const countryMatch = line.match(/tvg-country="([^"]*)"/);
                 current.country = countryMatch ? countryMatch[1] : null; 
                 const languageMatch = line.match(/tvg-language="([^"]*)"/);
@@ -556,7 +552,7 @@
     }
 
 
-    // --- Load Category Function (Unchanged) ---
+    // --- Load Category Function (Updated to remove all-languages reference) ---
     async function loadCategory(cat) {
         currentCategory = cat;
         categoryNameLabel.textContent = cat.name;
@@ -583,10 +579,12 @@
         
         // --- Special Handling for Index View (Countries) ---
         if (cat.id === 'countries') {
+            // Index view relies on the robust 'all' category index file
             const allCategory = CATEGORIES.find(c => c.id === 'all');
             const allCached = getCachedData(allCategory.id);
             
             if (!allCached) {
+                // Load the required index file if not cached
                 try {
                     const response = await fetch(allCategory.url);
                     if (!response.ok) throw new Error(`Failed to load ${allCategory.name} playlist.`);
@@ -602,12 +600,14 @@
                 allChannels = allCached;
             }
             
+            // Show instruction message
             listContainer.innerHTML = `<div class="loader" style="padding: 40px;">
                 <span class="material-icons" style="font-size: 40px; color: var(--text-muted);">public</span>
                 <p style="margin-top: 10px; color: var(--text-main); font-weight: 600;">Global Filtering Active</p>
                 <p style="color: var(--text-muted);">${cat.info}</p>
             </div>`;
             
+            // Fall back to the full list after displaying the instruction
             applyFilters();
             return;
         }
@@ -637,12 +637,14 @@
         }
     }
 
-    // --- Filtering Logic (Unchanged) ---
+    // --- Filtering Logic (Updated to remove all-languages reference) ---
     function applyFilters() {
         const query = searchInput.value.toLowerCase();
         
+        // Handle filtering for the large index view
         if (currentCategory.id === 'countries' || currentCategory.id === 'all') {
             
+            // If the query is empty for index views, show the instruction message
             if (currentCategory.id === 'countries' && query === '') {
                 filteredChannels = allChannels; 
                 channelCountLabel.textContent = `${allChannels.length} channels (Use Search)`;
@@ -652,15 +654,18 @@
                 return;
             }
 
+            // Filter by Name, Group, Country tag, or Language tag
             filteredChannels = allChannels.filter(ch => {
                 const nameMatch = ch.name.toLowerCase().includes(query);
                 const groupMatch = ch.group && ch.group.toLowerCase().includes(query);
                 const countryMatch = ch.country && ch.country.toLowerCase().includes(query);
                 const languageMatch = ch.language && ch.language.toLowerCase().includes(query);
                 
+                // When in 'All Channels' or 'Countries', search all relevant fields
                 return countryMatch || languageMatch || groupMatch || nameMatch;
             });
         } 
+        // Standard category filtering (by name only)
         else {
             filteredChannels = allChannels.filter(ch => 
                 ch.name.toLowerCase().includes(query)
@@ -678,16 +683,18 @@
         }
     }
 
-    // --- Virtualization (Unchanged) ---
+    // --- Virtualization (Updated to show Country/Language metadata in index views) ---
     function setupVirtualizedList() {
         if (listObserver) {
             listObserver.disconnect();
         }
         
+        // Remove the instructional message/loader if a search query is active
         const isIndexView = currentCategory.id === 'countries';
         if (filteredChannels.length > 0 && !(isIndexView && searchInput.value === '')) {
             listContainer.innerHTML = '';
         } else if (isIndexView && searchInput.value === '') {
+            // Keep the instruction message if no search is active
             const loader = listContainer.querySelector('.loader');
             if(loader) loader.style.display = 'block';
             return;
@@ -742,6 +749,7 @@
         const primaryTag = channel.group || 'Uncategorized';
         let secondaryTags = '';
         
+        // Show Country and Language tags in 'All Channels' or 'Countries' index views
         if (currentCategory.id === 'countries' || currentCategory.id === 'all') {
             if (channel.country) {
                 secondaryTags += `<span class="ch-tag">${channel.country}</span>`;
@@ -826,7 +834,7 @@
     // --- Event Listeners (Unchanged) ---
     searchInput.addEventListener('input', applyFilters);
 
-    // --- Start (Unchanged) ---
+    // --- Start ---
     setupCategoryBar();
     function setupCategoryBar() {
         categoryBar.innerHTML = '';
@@ -846,7 +854,7 @@
         loadCategory(currentCategory);
     }
     window.toggleFavorite = toggleFavorite;
-    window.hideErrorOverlay = hideErrorOverlay; 
+    window.hideErrorOverlay = hideErrorOverlay; // Expose to global scope for button
 </script>
 
 </body>
