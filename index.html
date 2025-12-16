@@ -345,6 +345,10 @@
 
 <header>
     <div class="logo">Global Live TV Plus</div>
+    <div id="api-status" style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted); margin-left: 10px; border-left: 1px solid var(--border); padding-left: 15px;">
+        <span id="status-dot" style="width: 8px; height: 8px; background: #8b949e; border-radius: 50%; transition: background 0.3s;"></span>
+        <span id="status-text">Checking Source...</span>
+    </div>
     <div class="controls">
         <input type="text" id="search" placeholder="Search channels in this category...">
     </div>
@@ -470,7 +474,29 @@
     let currentCategory = CATEGORIES[0]; 
     let hls;
     let listObserver; 
-    
+
+    async function checkApiStatus() {
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+
+    try {
+        // We ping the main index file just to see if the GitHub server is responsive
+        const response = await fetch(`${BASE_URL}/index.m3u`, { method: 'HEAD' });
+        
+        if (response.ok) {
+            statusDot.style.background = '#238636'; // GitHub Green
+            statusText.textContent = 'Source Online';
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
+        statusDot.style.background = '#da3633'; // GitHub Red
+        statusText.textContent = 'Source Offline';
+    }
+}
+
+
+
     // --- Favorites Logic (Unchanged) ---
     function getFavorites() {
         const favorites = localStorage.getItem(FAVORITES_KEY);
@@ -867,7 +893,9 @@
     searchInput.addEventListener('input', applyFilters);
 
     // --- Start ---
+    checkApiStatus();
     setupCategoryBar();
+    setInterval(checkApiStatus, 120000);
     function setupCategoryBar() {
         categoryBar.innerHTML = '';
         CATEGORIES.forEach(cat => {
